@@ -1,5 +1,6 @@
 const presaleMamber = require('../db/presaleMember')
 const presaleMaster = require('../db/presaleMaster')
+const presaleMaster = require('../db/member')
 module.exports = function(io) {
   io.on('connection', function(socket) {
     console.log('presaleMemeber socket connected')
