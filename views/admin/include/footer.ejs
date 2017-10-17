@@ -1,0 +1,17 @@
+<script>
+    $(function(){
+      const url = document.location.href
+      $('#navbarCollapse > ul > li').removeClass('active')
+      if(url.includes('presale')){
+        $('#navbarCollapse > ul > li').eq(1).addClass('active')
+      }
+      if(url.includes('member')){
+        $('#navbarCollapse > ul > li').eq(0).addClass('active')
+      }
+      if(url.includes('list')){
+        $('#navbarCollapse > ul > li').eq(2).addClass('active')
+      }
+    })
+  </script>
+</body>
+</html>

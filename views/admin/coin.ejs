@@ -1,0 +1,92 @@
+<% include ./include/header %>
+<% include ./include/menu %>
+<div class="container">
+ <div class="col-lg-12">
+   <div style="width:100%;">
+      <select class="form-control" id="row" style="width:100px;">
+        <option value="20">20</option>
+        <option value="40">40</option>
+        <option value="60">60</option>
+        <option value="80">80</option>
+        <option value="100">100</option>
+        <option value="150">150</option>
+        <option value="200">200</option>
+      </select>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th colspan="6">
+              total coin : <span id='totalcoin'></span>   
+            </th>
+          </tr>
+          <tr>
+            <th style="text-align: center;">성명</th>
+            <th style="text-align: center;">이메일</th>
+            <th style="text-align: center;">전화번호</th>
+            <th style="text-align: center;">수량</th>
+            <th style="text-align: center;">지갑주소</th>
+            <th style="text-align: center;">참가일</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+ </div>
+ <div class="col-lg-12">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center" id="pagenation">
+        </ul>
+      </nav>
+ </div>
+</div>
+<% include ./include/scripts %>
+<script src="/js/utill.js"></script>
+<script>
+  var socket =  io.connect('<%= url %>')
+  socket.on('presaleMemberListResult', result =>{
+    console.log(result)
+    Paging.PagenationRow(result.total, result.page, Number($('#row').val()))
+    $('#totalcoin').text(result.sum[0].reduction)
+    let html = ''
+    if(result.data.length > 0){
+      for(var i=0; i<result.data.length;i++){
+        html += '<tr>'
+        html += '<td>' + result.data[i].member.name + '</td>'        
+        html += '<td>' + result.data[i].member.email + '</td>'        
+        html += '<td>' + result.data[i].member.tell + '</td>'        
+        html += '<td style="text-align:center;">' + result.data[i].qty + '</td>'    
+        html += '<td>' + result.data[i].addr + '</td>' 
+        html += '<td>' + Utill.TimeStringtoDate(result.data[i].regDate) + '</td>'
+        html += '</tr>'
+      }
+    }
+    else{
+      html = '<tr>'
+      html += '<td colspan="6" style="text-align:center;">No Data.</td>'        
+      html+= '</tr>'
+    }
+    $('tbody > tr').remove()
+    $('tbody').append(html)
+  })
+
+  var Page = {
+    Search : function(page){
+      const data = {
+        id: '<%= id %>',
+        page: page,
+        row: Number($('#row').val())
+      }
+      socket.emit('presaleMemberList', data)
+    }
+  }
+
+  $(function(){
+    Page.Search(1)
+    $('#row').change(function(){
+      Page.Search(1)
+    })
+  })
+  
+</script>
+<% include ./include/footer %>

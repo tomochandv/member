@@ -1,0 +1,38 @@
+<% include ./include/header %>
+<link href="/css/admin_login.css" rel="stylesheet">
+<div class="container">
+  <form class="form-signin">
+    <h2 class="form-signin-heading">Please sign in</h2>
+    <label for="inputEmail" class="sr-only">Email address</label>
+    <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+    <button class="btn btn-lg btn-primary btn-block" type="button" id="btnLogin">Sign in</button>
+  </form>
+</div>
+<form id="formLogin" method="post" action="/admin/loginprocess">
+  <input type="hidden" id="email" name="email">
+</form>
+<% include ./include/scripts %>
+<script>
+  var socket =  io.connect('<%= url %>')
+  $(function(){
+    $('#btnLogin').click(function(){
+      var admin = {
+        email : $('#inputEmail').val(),
+        pwd : $('#inputPassword').val()
+      }
+      socket.emit('adminLogin', admin)
+    })
+  })
+  socket.on('adminLoginResult', result =>{
+    if(result == 1){
+      $('#email').val($('#inputEmail').val())
+      $('#formLogin').submit()
+    }
+    else{
+      alert('비번 또는 이메일 확인 하세요')
+    }
+  })
+</script>
+<% include ./include/footer %>

@@ -1,0 +1,89 @@
+<% include ./include/header %>
+<% include ./include/menu %>
+<div class="container">
+    <form>
+        <div class="form-group">
+          <label for="email">이메일주소</label>
+          <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" required>
+          <small id="emailHelp" class="form-text text-muted">이메일 주소를 입력하세요.</small>
+        </div>
+        <div class="form-group">
+          <label for="name">이름</label>
+          <input type="text" class="form-control" id="name" aria-describedby="nameHelp" placeholder="Enter Name" minlength="2" required>
+          <small id="nameHelp" class="form-text text-muted">성함을 입력하세요.</small>
+        </div>
+        <div class="form-group">
+            <label for="tell">핸드폰번호</label>
+            <input type="tel" class="form-control" id="tell" aria-describedby="tellHelp" placeholder="Enter Cell No." required digits="true">
+            <small id="tellHelp" class="form-text text-muted">핸드폰 번호를 입력하세요. (01012345678)</small>
+          </div>
+        <div class="form-group">
+          <label for="pwd1">비밀번호</label>
+          <input type="password" class="form-control" name="pwd1" id="pwd1" placeholder="Password" required minlength="6">
+          <small id="tellHelp" class="form-text text-muted">비밀번호는 6자리 이상으로 입력하세요.</small>
+        </div>
+        <div class="form-group">
+            <label for="pwd2">비밀번호 확인</label>
+            <input type="password" class="form-control" name="pwd2" id="pwd2" placeholder="Password Again" required minlength="6">
+        </div>
+        <div class="form-check">
+            <label class="form-check-label">
+              <input type="checkbox" class="form-check-input" id="ckAgree" name="ckAgree" required>
+              상기인은 코인덱스 그룹회원으로 가입함에 있어서 동참하는 프리세일 및 국제거래소 등재되어있는 코인 투자시 
+              <br>리스크가 발생할수도 있다는 점을 사전에 충분히 듣고이해하고 결정했습니다. 
+              <br>이에 판단의 선택은 본인이 했고 책임도 본인의 책임사항이라는점을 알고 있습니다.
+              <br><strong>이에 동의합니다.</strong>
+            </label>
+          </div>
+        <button type="submit" class="btn btn-primary">회원가입</button>
+        <button type="button" class="btn btn-cancle" id="btnCancle">취소</button>
+      </form>
+</div>
+<% include ./include/scripts %>
+<script src="/js/message_ko.js"></script>
+<script>
+  var socket =  io.connect('<%= url %>')
+  $(function(){
+    $("form").validate({
+      submitHandler: function(form){
+        const member = {
+          email : $('#email').val(),
+          tell : $('#tell').val(),
+          name : $('#name').val(),
+          pwd : $('#pwd1').val(),
+          auth : false,
+          regDate : new Date()
+        }
+        socket.emit('memberInsert', member)
+      },
+      rules :{
+        pwd1 : 'required',
+        pwd2 : { equalTo : '#pwd1' },
+        ckAgree: 'required'
+      }
+    })
+
+    $('#btnCancle').click(function(){
+      location.href = '/'
+    })
+  })
+
+  socket.on('memberInsertResult', result =>{
+    if(result ==1){
+      alert('회원가입 완료 되었습니다. 관리자 확인 후 정상 처리 됩니다.')
+      location.href = '/'
+    }
+  })
+
+  $('#email').focusout(function(event){
+    socket.emit('memberCheck', $(this).val())
+  })
+
+  socket.on('memberCheckResult', result =>{
+    if(result > 0){
+      alert('중복된 이메일 입니다.')
+      $('#email').val('')
+    }
+  })
+</script>
+<% include ./include/footer %>

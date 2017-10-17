@@ -1,0 +1,169 @@
+<% include ./include/header %>
+<% include ./include/menu %>
+<div class="container">
+ <div class="col-lg-12">
+    <div class="alert alert-primary" role="alert">
+      <form>
+        <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>제목</td>
+            <td><input type="text" class="form-control" id="name" aria-describedby="nameHelp" placeholder="Enter Name" ></td>
+          </tr>
+          <tr>
+            <td>사용여부</td>
+            <td>
+                <select class="form-control" id="useYn">
+                    <option value="">전체</option>
+                    <option value="true">사용</option>
+                    <option value="false">미사용</option>
+                </select>
+            </td>
+          </tr>
+        </thead>
+        </table>
+        <div style="text-align:right">
+            <button type="button" id="btnAdd" class="btn btn-default btn-lg">추가</button>
+            <button type="button" id="btnSearch" class="btn btn-info btn-lg">검색</button>
+        </div>
+        <input type="hidden" id="hidId">
+      </form>
+    </div>
+ </div>
+ <div class="col-lg-12" id="divAdd" style="display:none;">
+    <form>
+      <div class="form-group">
+        <label for="title">프리세일명</label>
+        <input type="text" class="form-control" id="title" aria-describedby="title" required>
+      </div>
+      <div class="form-group">
+          <label for="coinqty">참여코인 갯수</label>
+          <input type="number" class="form-control" id="coinqty" aria-describedby="coinqty" required>
+      </div>
+      <div class="form-group">
+          <label for="coin">참여코인 종류</label>
+          <input type="text" class="form-control" id="coin" aria-describedby="coin" required>
+      </div>
+      <div class="form-group">
+          <label for="coin">사용여부</label>
+          <select class="form-control" id="use">
+              <option value="true">사용</option>
+              <option value="false">미사용</option>
+          </select>
+      </div>
+      <div class="form-group">
+          <label for="desc">설명</label>
+          <textarea class="form-control" id="desc" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">저장</button>
+      <button type="button" id="btnCancle" class="btn btn-default">취소</button>
+    </form>
+ </div>
+ <div class="col-lg-12">&nbsp;</div>
+ <div class="col-lg-12">
+    <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th style="text-align: center;">제목</th>
+            <th style="text-align: center;">코인종류</th>
+            <th style="text-align: center;">수량</th>
+            <th style="text-align: center;">날짜</th>
+            <th style="text-align: center;">사용여부</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+ </div>
+ <div class="col-lg-12">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center" id="pagenation">
+        </ul>
+      </nav>
+ </div>
+</div>
+<% include ./include/scripts %>
+<script src="/js/message_ko.js"></script>
+<script src="/js/utill.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.8/summernote-bs4.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.8/summernote-bs4.js"></script>
+<script>
+  var socket =  io.connect('<%= url %>')
+  var Page = {
+    Search : page =>{
+      const data = {
+        title : $('#name').val(),
+        useYn : $('#useYn').val(),
+        page : page
+      }
+      socket.emit('presaleMasterList', data)
+    },
+    Click: id =>{
+      $('tbody > tr').removeClass('table-warning')
+      $('#'+id).addClass('table-warning')
+      $('#divAdd').show()
+      const data = {
+        id : id
+      }
+      socket.emit('presaleMasterDetail', data)
+    }
+  }
+  $(function(){
+    $('#desc').summernote({height: 300})
+    Page.Search(1)
+    $('#btnCancle, #btnAdd').click(function(){
+      $('input, textarea').val('')
+      $('#desc').summernote('code','')
+      $('#divAdd').toggle()
+    })
+    $('#btnSearch').click(function(){
+      Page.Search(1)
+    })
+    $("form").validate({
+      submitHandler: function(form){
+        const data = {
+          title : $('#title').val(),
+          qty : Number($('#coinqty').val()),
+          coin : $('#coin').val(),
+          desc : $('#desc').val(),
+          use : $('#use').val() == 'true' ? true : false,
+          regDate : new Date(),
+          id : $('#hidId').val()
+        }
+        socket.emit('presaleMasterInsert', data)
+        Page.Search(1)
+      }
+    })
+  })
+  socket.on('presaleMasterListResult', result =>{
+    Paging.Pagenation(result.total, result.page)
+    let html = ''
+    if(result.data.length > 0){
+      for(var i=0; i<result.data.length;i++){
+        html += '<tr onclick="Page.Click(\'' + result.data[i].id + '\')" id="'+ result.data[i].id +'">'
+        html += '<td>' + result.data[i].title + '</td>'        
+        html += '<td style="text-align:center;">' + result.data[i].coin + '</td>'               
+        html += '<td style="text-align:center;">' + result.data[i].qty + '</td>'               
+        html += '<td style="text-align:center;">' + Utill.TimeStringtoDate(result.data[i].regDate) + '</td>'        
+        html += '<td style="text-align:center;">' + (result.data[i].use === true? '사용' : '미사용') + '</td>'        
+        html += '</tr>'
+      }
+    }
+    else{
+      html = '<tr>'
+      html += '<td colspan="5" style="text-align:center;">No Data.</td>'        
+      html+= '</tr>'
+    }
+    $('tbody > tr').remove()
+    $('tbody').append(html)
+  })
+  socket.on('presaleMasterDetailResult', result =>{
+    $('#title').val(result.title)
+    $('#coinqty').val(result.qty)
+    $('#coin').val(result.coin)
+    $('#desc').summernote('code',result.desc)
+    $('#use').val(result.use.toString()).change()
+    $('#hidId').val(result.id)
+  })
+</script>
+<% include ./include/footer %>

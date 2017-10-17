@@ -1,0 +1,131 @@
+<% include ./include/header %>
+<% include ./include/menu %>
+<div class="container">
+ <div class="col-lg-12">
+    <div class="alert alert-primary" role="alert">
+      <form>
+        <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>이름</td>
+            <td><input type="text" class="form-control" id="name" aria-describedby="nameHelp" placeholder="Enter Name" ></td>
+            <td>전화번호</td>
+            <td><input type="tel" class="form-control" id="tell" aria-describedby="tellHelp" placeholder="Enter Cell No."  digits="true"></td>
+          </tr>
+          <tr>
+            <td>이메일</td>
+            <td><input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" ></td>
+            <td>승인여부</td>
+            <td>
+                <select class="form-control" id="auth">
+                    <option value="">전체</option>
+                    <option value="true">승인</option>
+                    <option value="false">미승인</option>
+                </select>
+            </td>
+          </tr>
+        </thead>
+        </table>
+        <div style="text-align:right">
+            <button type="submit" class="btn btn-info btn-lg">검색</button>
+        </div>
+      </form>
+    </div>
+ </div>
+ <div class="col-lg-12">
+    <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th style="text-align: center;">이름</th>
+            <th style="text-align: center;">전화번호</th>
+            <th style="text-align: center;">이메일</th>
+            <th style="text-align: center;">가입일</th>
+            <th style="text-align: center;">승인여부</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+ </div>
+ <div class="col-lg-12">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center" id="pagenation">
+        </ul>
+      </nav>
+ </div>
+</div>
+<% include ./include/scripts %>
+<script src="/js/message_ko.js"></script>
+<script src="/js/utill.js"></script>
+<script>
+  var socket =  io.connect('<%= url %>')
+  var Page = {
+    Search : page =>{
+      const member = {
+        email : $('#email').val(),
+        tell : $('#tell').val(),
+        name : $('#name').val(),
+        auth : $('#auth').val(),
+        page : page
+      }
+      socket.emit('memberList', member)
+    },
+    Auth : (id,status) =>{
+      const data = {
+        id : id, status : status
+      }
+      socket.emit('memberAuth', data)
+    }
+  }
+  $(function(){
+    Page.Search(1)
+    $("form").validate({
+      submitHandler: function(form){
+        Page.Search(1)
+      }
+    })
+  })
+  socket.on('memberListResult', result =>{
+    console.log(result)
+    Paging.Pagenation(result.total, result.page)
+    let html = ''
+    if(result.data.length > 0){
+      for(var i=0; i<result.data.length;i++){
+        html += '<tr>'
+        html += '<td>' + result.data[i].name + '</td>'        
+        html += '<td>' + result.data[i].tell + '</td>'        
+        html += '<td>' + result.data[i].email + '</td>'        
+        html += '<td>' + Utill.TimeStringtoDate(result.data[i].regDate) + '</td>'        
+        html += '<td style="text-align:center;">'
+        if(result.data[i].auth){
+          html += '<button id="' + result.data[i].id + '" type="button" onclick="Page.Auth(\'' + result.data[i].id + '\', \'N\')" class="btn btn-primary">승인</button>'
+        }
+        else{
+          html += '<button id="' + result.data[i].id + '" type="button" onclick="Page.Auth(\'' + result.data[i].id + '\', \'Y\')" class="btn btn-dark">미승인</button>'
+        }
+        html += '</td>'        
+        html += '</tr>'
+      }
+    }
+    else{
+      html = '<tr>'
+      html += '<td colspan="5" style="text-align:center;">No Data.</td>'        
+      html+= '</tr>'
+    }
+    $('tbody > tr').remove()
+    $('tbody').append(html)
+  })
+  socket.on('memberAuthResult', result =>{
+    if(result.result.replaced > 0){
+      const oldStatus = $('#'+result.id).attr('class')
+      if(oldStatus == 'btn btn-primary'){
+        $('#'+result.id).removeClass('btn-primary').addClass('btn-dark').removeAttr('onclick').attr('onclick', 'Page.Auth(\'' + result.id + '\', \'Y\')').text('미승인')
+      }
+      else{
+        $('#'+result.id).removeClass('btn-dark').addClass('btn-primary').removeAttr('onclick').attr('onclick', 'Page.Auth(\'' + result.id + '\', \'N\')').text('승인')
+      }
+    }
+    console.log(result)
+  })
+</script>
+<% include ./include/footer %>

@@ -1,0 +1,102 @@
+<% include ./include/header %>
+<% include ./include/menu %>
+<div class="container">
+  <div class="card">
+      <h4 class="card-header">진행중인 프리세일</h4>
+      <div class="card-body">
+          <p class="card-text">
+              코인명 : <span id="title"></span>
+            </p>
+        <p class="card-text">
+          코인종류 : <span id="coin"></span>
+        </p>
+        <p class="card-text">
+          참여가능 코인갯수 : <span id="qty"></span>
+        </p>
+        <p class="card-text">
+          <span id="desc"></span>
+        </p>
+        <div class="alert alert-danger" role="alert" id="divAlert" style="display:none;">
+            이미 참여하신 프리세일 입니다.
+        </div>
+        <form>
+            <div class="form-group">
+              <label for="qty">참여 코인갯수</label>
+              <input type="number" class="form-control" name="txtqty" id="txtqty" aria-describedby="emailHelp" placeholder="Enter coin qty." required digits="true">
+              <small id="qty" class="form-text text-muted">참여 코인 갯수를 입력하세요.</small>
+              <input type="hidden" id="hidId">
+              <input type="hidden" id="hidmax">
+            </div>
+            <div class="form-group">
+              <label for="addr">지갑주소</label>
+              <input type="text" class="form-control" id="txtaddr" name="txtaddr" placeholder="Enter Coin Wallet Address." required>
+              <small id="addr" class="form-text text-muted">전자지갑 주소를 입력하세요.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">참가</button>
+          </form>
+      </div>
+    </div>
+</div>
+<% include ./include/scripts %>
+<script src="/js/message_ko.js"></script>
+<script>
+  $(function(){
+    var socket =  io.connect('<%= url %>')
+    
+    socket.on('presaleMemberCheckResult', result =>{
+      if(result >0){
+        $('button').hide()
+        $('#divAlert').show()
+      }
+    })
+
+    const data = {
+      title: '',
+      useYn: 'true',
+      page: 1
+    }
+    socket.emit('presaleMasterList', data)
+    socket.on('presaleMasterListResult', result =>{
+      if(result.data.length > 0){
+        $('#title').text(result.data[0].title)
+        $('#coin').text(result.data[0].coin)
+        $('#qty').text(result.data[0].qty)
+        $('#desc').text(result.data[0].desc)
+        $('#hidId').val(result.data[0].id)
+        $('#hidmax').val(result.data[0].qty)
+
+        socket.emit('presaleMemberCheck', {id: result.data[0].id})
+      }
+      else{
+        $('#title').text('진행중인 프리세일이 없습니다.')
+      }
+    })
+
+    socket.on('presaleMemberInsertResult', result =>{
+      if(result > 0){
+        alert('참여 되었습니다. 감사합니다.')
+        $('input').val('')
+        $('button').hide()
+      }
+    })
+
+    $("form").validate({
+      submitHandler: function(form){
+        const inqty = Number($('#txtqty').val())
+        const maxQty = Number($('#hidmax').val())
+        if(maxQty < inqty){
+          alert('최대 참여가능한 코인수를 넘었습니다.')
+          return false
+        }
+        const member = {
+          qty : inqty,
+          addr : $('#txtaddr').val(),
+          regDate : new Date(),
+          id : $('#hidId').val()
+        }
+        socket.emit('presaleMamberInsert', member)
+      }
+    })
+  })
+</script>
+<% include ./include/footer %>
