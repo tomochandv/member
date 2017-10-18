@@ -41,7 +41,15 @@
 <script>
   $(function(){
     var socket =  io.connect('<%= url %>')
-    
+    //인증
+    socket.emit('token', localStorage.getItem('token'))
+    socket.on('tokenResult', result =>{
+      if(!result.result){
+        localStorage.removeItem('token')
+        location.href = '/'
+      }
+    })
+    //인증끝
     socket.on('presaleMemberCheckResult', result =>{
       if(result >0){
         $('button').hide()

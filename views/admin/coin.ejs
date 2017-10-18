@@ -16,7 +16,7 @@
     <table class="table table-bordered">
         <thead>
           <tr>
-            <th colspan="6">
+            <th colspan="7">
               total coin : <span id='totalcoin'></span>   
             </th>
           </tr>
@@ -27,6 +27,7 @@
             <th style="text-align: center;">수량</th>
             <th style="text-align: center;">지갑주소</th>
             <th style="text-align: center;">참가일</th>
+            <th style="text-align: center;">&nbsp;</th>
           </tr>
         </thead>
         <tbody>
@@ -44,6 +45,15 @@
 <script src="/js/utill.js"></script>
 <script>
   var socket =  io.connect('<%= url %>')
+  //인증
+  socket.emit('token', localStorage.getItem('token'))
+  socket.on('tokenResult', result =>{
+    if(!result.result || result.type != 'A'){
+      localStorage.removeItem('token')
+      location.href = '/admin/login'
+    }
+  })
+  //인증 end
   socket.on('presaleMemberListResult', result =>{
     console.log(result)
     Paging.PagenationRow(result.total, result.page, Number($('#row').val()))
@@ -58,6 +68,7 @@
         html += '<td style="text-align:center;">' + result.data[i].qty + '</td>'    
         html += '<td>' + result.data[i].addr + '</td>' 
         html += '<td>' + Utill.TimeStringtoDate(result.data[i].regDate) + '</td>'
+        html += '<td><button type="button" class="btn btn-danger" onclick="Page.Delete(\'' + result.data[i].id + '\')">삭제</button></td>'
         html += '</tr>'
       }
     }
@@ -70,6 +81,13 @@
     $('tbody').append(html)
   })
 
+  socket.on('presaleMemberDeleteResult', result =>{
+    console.log(result)
+    if(result.deleted > 0){
+      location.href = '/admin/coin/<%= id %>'
+    }
+  })
+
   var Page = {
     Search : function(page){
       const data = {
@@ -78,6 +96,12 @@
         row: Number($('#row').val())
       }
       socket.emit('presaleMemberList', data)
+    },
+    Delete: function(id){
+      const data = {
+        id: id
+      }
+      socket.emit('presaleMemberDelete', data)
     }
   }
 

@@ -27,6 +27,10 @@ var presaleMember = {
       sum: sum
     }
     return json
+  },
+  delete: async function(id){
+    const result = await r.table('presaleMember').get(id).delete().run()
+    return result
   }
 }
 

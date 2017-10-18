@@ -19,11 +19,14 @@ require('./route')(app)
 app.set('views', './views')          
 app.set('view engine', 'ejs')
 
-require('./socket/member')(io)
-require('./socket/presaleMaster')(io)
-require('./socket/presaleMember')(io)
-require('./socket/admin')(io)
-require('./socket/token')(io)
+io.on('connection', function(socket) {
+    console.log('socket connected~!!')
+    require('./socket/token')(socket, io)
+    require('./socket/member')(socket, io)
+    require('./socket/presaleMaster')(socket, io)
+    require('./socket/presaleMember')(socket, io)
+    require('./socket/admin')(socket, io)
+})
 
 http.listen(config.port, () => {
     console.log('App listening on port 3000')

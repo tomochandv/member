@@ -62,6 +62,10 @@ module.exports = (app)=>{
     res.render('admin/coin', {url: config.domain + ':' + config.port, id:req.params.id})
   })
 
+  app.get('/test',  function(req, res) {
+    res.render('test', {url: config.domain + ':' + config.port, id:req.params.id})
+  })
+
   app.use(function(req, res, next) {
     res.status(404).send('Sorry cant find that!')
   })

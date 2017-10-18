@@ -89,6 +89,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.8/summernote-bs4.js"></script>
 <script>
   var socket =  io.connect('<%= url %>')
+  //인증
+  socket.emit('token', localStorage.getItem('token'))
+  socket.on('tokenResult', result =>{
+    if(!result.result || result.type != 'A'){
+      localStorage.removeItem('token')
+      location.href = '/admin/login'
+    }
+  })
+  //인증 end
   var Page = {
     Search : page =>{
       const data = {

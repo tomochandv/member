@@ -26,9 +26,17 @@
 <script src="/js/utill.js"></script>
 <script>
   var socket =  io.connect('<%= url %>')
+  //인증
+  socket.emit('token', localStorage.getItem('token'))
+  socket.on('tokenResult', result =>{
+    if(!result.result || result.type != 'A'){
+      localStorage.removeItem('token')
+      location.href = '/admin/login'
+    }
+  })
+  //인증 end
   socket.emit('presaleMemberGroup')
   socket.on('presaleMemberGroupResult', result =>{
-console.log(result)
     let html = ''
     if(result.length > 0){
       for(var i=0; i<result.length;i++){

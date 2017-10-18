@@ -1,13 +1,11 @@
 const token = require('../db/token')
 const moment = require('moment')
 
-module.exports = function(io) {
-  io.on('connection', function(socket) {
-    console.log('token socket connected')
+module.exports = function(socket, io) {
+    const socketId = socket.id
     socket.on('token', (data) => {
       require('../validation')(data).then(function(result){
-        io.emit('tokenResult', result)
+        io.to(socketId).emit('tokenResult', result)
       })
     })
-  })
 }
