@@ -1,3 +1,14 @@
-
+<script>
+  if(document.location.href.includes('/user/main')){
+    var socket =  io.connect('<%= url %>')
+    socket.emit('token', localStorage.getItem('token'))
+    socket.on('tokenResult', result =>{
+      if(!result.result){
+        localStorage.removeItem('token')
+        location.href = '/'
+      }
+    })
+  }
+</script>
 </body>
 </html>

@@ -6,22 +6,34 @@ module.exports = function(io) {
     console.log('presaleMemeber socket connected')
     //프리세일 맴버
     socket.on('presaleMamberInsert', (data) => {
-      Promise.all([presaleMaster.detail(data.id), member.detailWithEmail(socket.request.session.email)]).then(values =>{
-        const remadeData = {
-          master: values[0],
-          member: values[1][0],
-          qty: data.qty,
-          addr: data.addr,
-          regDate: data.regDate
-        }
-        presaleMamber.insert(remadeData).then(result =>{
-          io.emit('presaleMemberInsertResult', result)
+      
+      let email = ''
+      require('../validation')(data.token).then(function(result){
+        email = result.email
+      }).then(()=>{
+        Promise.all([presaleMaster.detail(data.id), member.detailWithEmail(email)]).then(values =>{
+          const remadeData = {
+            masterId: data.id,
+            master: values[0],
+            member: values[1][0],
+            qty: data.qty,
+            addr: data.addr,
+            regDate: data.regDate
+          }
+          presaleMamber.insert(remadeData).then(result =>{
+            io.emit('presaleMemberInsertResult', result)
+          })
         })
       })
     })
     socket.on('presaleMemberCheck', (data)=>{
-      presaleMamber.findMember(socket.request.session.email, data.id).then(result=>{
-        io.emit('presaleMemberCheckResult', result)
+      let email = ''
+      require('../validation')(data.token).then(function(result){
+        email = result.email
+      }).then(()=>{
+        presaleMamber.findMember(email, data.id).then(result=>{
+          io.emit('presaleMemberCheckResult', result)
+        })
       })
     }),
     socket.on('presaleMemberGroup', ()=>{

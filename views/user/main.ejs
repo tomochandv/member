@@ -13,9 +13,8 @@
         <p class="card-text">
           참여가능 코인갯수 : <span id="qty"></span>
         </p>
-        <p class="card-text">
-          <span id="desc"></span>
-        </p>
+        <div class="card-text" id="desc">
+        </div>
         <div class="alert alert-danger" role="alert" id="divAlert" style="display:none;">
             이미 참여하신 프리세일 입니다.
         </div>
@@ -61,11 +60,11 @@
         $('#title').text(result.data[0].title)
         $('#coin').text(result.data[0].coin)
         $('#qty').text(result.data[0].qty)
-        $('#desc').text(result.data[0].desc)
+        $('#desc').html(result.data[0].desc)
         $('#hidId').val(result.data[0].id)
         $('#hidmax').val(result.data[0].qty)
 
-        socket.emit('presaleMemberCheck', {id: result.data[0].id})
+        socket.emit('presaleMemberCheck', {id: result.data[0].id, token: localStorage.getItem('token')})
       }
       else{
         $('#title').text('진행중인 프리세일이 없습니다.')
@@ -92,7 +91,8 @@
           qty : inqty,
           addr : $('#txtaddr').val(),
           regDate : new Date(),
-          id : $('#hidId').val()
+          id : $('#hidId').val(),
+          token: localStorage.getItem('token')
         }
         socket.emit('presaleMamberInsert', member)
       }

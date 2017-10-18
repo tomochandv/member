@@ -28,7 +28,7 @@
   var socket =  io.connect('<%= url %>')
   socket.emit('presaleMemberGroup')
   socket.on('presaleMemberGroupResult', result =>{
-
+console.log(result)
     let html = ''
     if(result.length > 0){
       for(var i=0; i<result.length;i++){

@@ -26,9 +26,10 @@
     })
   })
   socket.on('adminLoginResult', result =>{
-    if(result == 1){
-      $('#email').val($('#inputEmail').val())
-      $('#formLogin').submit()
+    if(result.message == 1){
+      localStorage.setItem('token',result.token)
+      socket.emit('token', result.token)
+      location.href = '/admin/member'
     }
     else{
       alert('비번 또는 이메일 확인 하세요')

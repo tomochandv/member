@@ -1,6 +1,7 @@
 const basic = 
 {
   domain : '119.207.78.155',
+  //domain : '127.0.0.1',
   port : 3000,
   rethink : {
     host : '119.207.78.155',

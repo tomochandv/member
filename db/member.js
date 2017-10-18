@@ -1,6 +1,9 @@
 const config = require('../config')
 const r = require('../rethink')
 const security = require('../security')
+const token = require('./token')
+const uuidV4 = require('uuid/v4')
+const moment = require('moment')
 
 var member = {
   insert : async function(data){
@@ -45,7 +48,17 @@ var member = {
       }
       else{
         if(user[0].auth){
+          const tokenId = uuidV4()
+          const tokenData = {
+            token: tokenId
+            ,email: data.email
+            ,genDate: moment().format()
+            ,exDate: moment().add(1, 'hour').format()
+            ,type:'U'
+          }
+          token.insert(tokenData)
           result.message = 1
+          result.token = tokenId
         }
         else{
           result.message = '아직 관리자 인증이 되지 않았습니다.'

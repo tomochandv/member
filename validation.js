@@ -1,13 +1,21 @@
-var store = require('store')
-const loginYn = store.get('adminUser') == null ? false : true
-let login = {
-  name : store.get('adminUser').uname,
-  email : store.get('adminUser').email
+const token = require('./db/token')
+const moment = require('moment')
+
+async function checktoken(tokenId){
+  let data = {
+    result: false,
+    email:'',
+    type: 'U'
+  }
+  const tokenResult = await token.select(tokenId)
+  const now = moment().format()
+  const ex_date = moment(tokenResult[0].exDate)
+  if(ex_date.isAfter(now)){
+    data.result = true,
+    data.email = tokenResult[0].email,
+    data.type = tokenResult[0].type
+  }
+  return data
 }
 
-// if(loginYn){
-//   login.name = 'a',
-//   login.email = 'aaa@aaa.net'
-// }
-
-module.exports = login
+module.exports = checktoken

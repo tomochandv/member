@@ -13,5 +13,17 @@
       }
     })
   </script>
+  <script>
+      if(!document.location.href.includes('/admin/login')){
+        var socket =  io.connect('<%= url %>')
+        socket.emit('token', localStorage.getItem('token'))
+        socket.on('tokenResult', result =>{
+          if(!result.result || result.type != 'A'){
+            localStorage.removeItem('token')
+            location.href = '/admin/login'
+          }
+        })
+      }
+    </script>
 </body>
 </html>

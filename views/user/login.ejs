@@ -10,9 +10,6 @@
     <button class="btn btn-lg btn-primary btn-block" type="button" id="btnLogin">Sign in</button>
   </form>
 </div>
-<form id="formLogin" method="post" action="/user/loginprocess">
-  <input type="hidden" id="email" name="email">
-</form>
 <% include ./include/scripts %>
 <script>
   var socket =  io.connect('<%= url %>')
@@ -27,12 +24,14 @@
   })
   socket.on('loginResult', result =>{
     if(result.message == 1){
-      $('#email').val($('#inputEmail').val())
-      $('#formLogin').submit()
+      localStorage.setItem('token',result.token)
+      socket.emit('token', result.token)
+      location.href = '/user/main'
     }
     else{
       alert(result.message)
     }
   })
+
 </script>
 <% include ./include/footer %>
