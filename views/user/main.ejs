@@ -11,7 +11,7 @@
           코인종류 : <span id="coin"></span>
         </p>
         <p class="card-text">
-          참여가능 코인갯수 : <span id="qty"></span>
+          최소 참여가능 코인갯수 : <span id="qty"></span>
         </p>
         <div class="card-text" id="desc">
         </div>
@@ -83,8 +83,8 @@
       submitHandler: function(form){
         const inqty = Number($('#txtqty').val())
         const maxQty = Number($('#hidmax').val())
-        if(maxQty < inqty){
-          alert('최대 참여가능한 코인수를 넘었습니다.')
+        if(maxQty > inqty){
+          alert('최소 참여가능한 코인수 이상 가능합니다.')
           return false
         }
         const member = {
