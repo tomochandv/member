@@ -21,6 +21,11 @@
       }
       socket.emit('login', info)
     })
+    $('#inputPassword').keypress(function(event){
+      if(event.keyCode == 13){
+        $('#btnLogin').click()
+      }
+    })
   })
   socket.on('loginResult', result =>{
     if(result.message == 1){

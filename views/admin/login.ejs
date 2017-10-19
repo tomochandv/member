@@ -24,6 +24,11 @@
       }
       socket.emit('adminLogin', admin)
     })
+    $('#inputPassword').keypress(function(event){
+      if(event.keyCode == 13){
+        $('#btnLogin').click()
+      }
+    })
   })
   socket.on('adminLoginResult', result =>{
     if(result.message == 1){
